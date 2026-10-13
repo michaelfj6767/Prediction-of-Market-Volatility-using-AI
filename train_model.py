@@ -24,23 +24,24 @@ def main() -> None:
     #          (kalau pakai seluruh data = kebocoran!). Ambil median volatilitas_depan
     #          pada 80% baris pertama. (Bank A)
     n = int(len(df) * 0.8)
-    ambang = None  # <-- GANTI
-    # JELASKAN kenapa ambang HARUS dari data latih saja: ____
+    ambang = volatilitas_depan(df).iloc[:n].median()  # <-- GANTI
+    # JELASKAN kenapa ambang HARUS dari data latih saja: ambang harus diambil dari data latih agar mencegah data yg diambil salah ditafsirkan
 
     df = buat_target(df, ambang).dropna().reset_index(drop=True)
     X, y = df[FITUR], df["target"]
 
     # TODO 2 — SPLIT KRONOLOGIS (80% awal latih, 20% akhir uji). Jangan diacak. (Bank B)
     n = int(len(df) * 0.8)
-    X_tr, X_te = None, None  # <-- GANTI
-    y_tr, y_te = None, None  # <-- GANTI
+    X_tr, X_te = X.iloc[:n], X.iloc[n:] None  # <-- GANTI
+    y_tr, y_te = y.iloc[:n], y.iloc[n:] None  # <-- GANTI
 
     # TODO 3 — Latih Random Forest pada data latih. (Bank C)
-    model = None  # <-- GANTI
+    model = RandomForestClassifier(random_state=67)
+    model.fit(X_tr, y_tr)
 
     # TODO 4 — Akurasi uji & baseline majority; bandingkan dengan tebak koin (0.50). (Bank D)
-    acc = None       # <-- GANTI
-    majority = None  # <-- GANTI
+    acc = accuracy_score(y_te, model.predict(X_te))       # <-- GANTI
+    majority = max(y_te.mean(), 1 - y_te.mean())   # <-- GANTI
     print(f"Akurasi model    : {acc}")
     print(f"Baseline majority: {majority}")
     # JELASKAN: apakah modelmu jauh di atas 0.50? Apa artinya soal volatilitas? ____
