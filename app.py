@@ -13,8 +13,8 @@ import streamlit as st
 
 from utils import buat_fitur, FITUR, HORIZON
 
-MODEL_PATH = Path("model/model_volatilitas.joblib")
-DATA_PATH = Path("data/saham_contoh.csv")
+MODEL_PATH = Path("model_volatilitas.joblib")
+DATA_PATH = Path("saham_contoh.csv")
 st.set_page_config(page_title="Radar Volatilitas", page_icon="📡", layout="centered")
 
 
@@ -38,7 +38,9 @@ st.caption(f"Apakah ~{HORIZON} hari ke depan TENANG atau BERGEJOLAK? (bukan pred
 st.warning("⚠️ **Materi edukasi, bukan saran investasi.**")
 
 # TODO 1 — Muat model dari MODEL_PATH. Kalau belum ada, tampilkan pesan & hentikan. (Bank A)
-model = None  # <-- GANTI
+if not MODEL_PATH.exists():
+    st.error("Jalankan dulu model"); st.stop
+model = joblib.load("MODEL_PATH")
 
 ticker = st.text_input("Kode saham (contoh: BBCA.JK, TLKM.JK, AAPL)", value="TLKM.JK")
 df, sumber = ambil_data(ticker)
@@ -53,8 +55,19 @@ with tab1:
     #   (a) buat fitur dari df, buang baris kosong, ambil baris terakhir;
     #   (b) ambil PROBABILITAS dari model;
     #   (c) 'bergejolak' bila peluang kelas 1 >= 0.5; simpan keyakinan. (Bank B)
-    bergejolak, yakin = None, 0.0  # <-- GANTI
+    df_features = df.copy()
+    df_clean = df_features.dropna()
+    X_last = df_clean.drop.iloc[[-1]]
 
+    probabilities = model.predict_proba[X_last]
+    peluang_1 = probabilities[1]
+    bergejolak = peluang_1 >= 0.5
+
+    if(bergejolak):
+        yakin = peluang_1
+    else:
+        yakin = 1-peluang_1
+    
     if bergejolak is True:
         st.markdown("## 🟠 BERGEJOLAK")
         st.write(f"Diperkirakan ~{HORIZON} hari ke depan bergerak lebih liar.")
@@ -70,7 +83,8 @@ with tab2:
     st.subheader("Volatilitas 10-hari (60 hari terakhir)")
     # TODO 3 — Tampilkan grafik volatilitas: std return 10-hari (dikali 100),
     #          60 titik terakhir, pakai st.line_chart. (Bank C)
-    st.info("Lengkapi TODO 3.")
+    chart_data = data["volatilitas_10_hari"].tail(60) * 100
+    st.line_chart(chart_data)
 
 # ---------------- Tab 3: Tentang ----------------
 with tab3:
