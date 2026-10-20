@@ -12,8 +12,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 from utils import buat_fitur, buat_target, volatilitas_depan, FITUR
 
-DATA_PATH = Path("data/saham_contoh.csv")
-MODEL_PATH = Path("model/model_volatilitas.joblib")
+DATA_PATH = Path("saham_contoh.csv")
+MODEL_PATH = Path("model_volatilitas.joblib")
 
 
 def main() -> None:
