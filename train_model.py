@@ -32,8 +32,8 @@ def main() -> None:
 
     # TODO 2 — SPLIT KRONOLOGIS (80% awal latih, 20% akhir uji). Jangan diacak. (Bank B)
     n = int(len(df) * 0.8)
-    X_tr, X_te = X.iloc[:n], X.iloc[n:] None  # <-- GANTI
-    y_tr, y_te = y.iloc[:n], y.iloc[n:] None  # <-- GANTI
+    X_tr, X_te = X.iloc[:n], X.iloc[n:]   # <-- GANTI
+    y_tr, y_te = y.iloc[:n], y.iloc[n:]   # <-- GANTI
 
     # TODO 3 — Latih Random Forest pada data latih. (Bank C)
     model = RandomForestClassifier(random_state=67)
