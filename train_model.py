@@ -1,14 +1,8 @@
-"""
-train_model.py — Melatih model RADAR VOLATILITAS & menyimpannya.
-
->>> LENGKAPI TODO dengan kodemu sendiri. <<< (Pertemuan 2)
-Jalankan:  python train_model.py   ->  model/model_volatilitas.joblib
-Mentok? Lihat Bank Petunjuk di bawah.
-"""
 from pathlib import Path
-import joblib
+import joblib  # Pastikan library joblib sudah terinstall (pip install joblib)
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score  # <-- KEKURANGAN 1: Harus diimport untuk menghitung akurasi
 
 from utils import buat_fitur, buat_target, volatilitas_depan, FITUR
 
@@ -20,31 +14,37 @@ def main() -> None:
     df = pd.read_csv(DATA_PATH, parse_dates=["Date"])
     df = buat_fitur(df)
 
-    # TODO 1 — Hitung AMBANG dari DATA LATIH saja (80% awal), bukan seluruh data
-    #          (kalau pakai seluruh data = kebocoran!). Ambil median volatilitas_depan
-    #          pada 80% baris pertama. (Bank A)
+    # TODO 1 — Hitung AMBANG dari DATA LATIH saja (80% awal)
     n = int(len(df) * 0.8)
-    ambang = volatilitas_depan(df).iloc[:n].median()  # <-- GANTI
-    # JELASKAN kenapa ambang HARUS dari data latih saja: ambang harus diambil dari data latih agar mencegah data yg diambil salah ditafsirkan
+    ambang = volatilitas_depan(df).iloc[:n].median()  
+    
+    # JELASKAN kenapa ambang HARUS dari data latih saja: 
+    # Agar tidak terjadi "Data Leakage" (kebocoran data). Jika kita menggunakan informasi dari data uji (20% akhir) 
+    # untuk menghitung ambang, model kita secara tidak langsung sudah 'mengintip' masa depan, 
+    # sehingga hasil evaluasi model menjadi tidak realistis/terlalu optimis.
 
     df = buat_target(df, ambang).dropna().reset_index(drop=True)
     X, y = df[FITUR], df["target"]
 
-    # TODO 2 — SPLIT KRONOLOGIS (80% awal latih, 20% akhir uji). Jangan diacak. (Bank B)
+    # TODO 2 — SPLIT KRONOLOGIS (80% awal latih, 20% akhir uji). Jangan diacak.
     n = int(len(df) * 0.8)
-    X_tr, X_te = X.iloc[:n], X.iloc[n:]   # <-- GANTI
-    y_tr, y_te = y.iloc[:n], y.iloc[n:]   # <-- GANTI
+    X_tr, X_te = X.iloc[:n], X.iloc[n:]   
+    y_tr, y_te = y.iloc[:n], y.iloc[n:]   
 
-    # TODO 3 — Latih Random Forest pada data latih. (Bank C)
+    # TODO 3 — Latih Random Forest pada data latih.
     model = RandomForestClassifier(random_state=67)
     model.fit(X_tr, y_tr)
 
-    # TODO 4 — Akurasi uji & baseline majority; bandingkan dengan tebak koin (0.50). (Bank D)
-    acc = accuracy_score(y_te, model.predict(X_te))       # <-- GANTI
-    majority = max(y_te.mean(), 1 - y_te.mean())   # <-- GANTI
-    print(f"Akurasi model    : {acc}")
-    print(f"Baseline majority: {majority}")
-    # JELASKAN: apakah modelmu jauh di atas 0.50? Apa artinya soal volatilitas? ____
+    # TODO 4 — Akurasi uji & baseline majority; bandingkan dengan tebak koin (0.50).
+    acc = accuracy_score(y_te, model.predict(X_te))       
+    majority = max(y_te.mean(), 1 - y_te.mean())   
+    print(f"Akurasi model    : {acc:.4f}")
+    print(f"Baseline majority: {majority:.4f}")
+    
+    # JELASKAN: apakah modelmu jauh di atas 0.50? Apa artinya soal volatilitas? 
+    # Jika akurasi model berada di atas 0.50 (tebak koin) dan di atas baseline majority, artinya 
+    # pola volatilitas saham di masa lalu memiliki struktur prediktif (tidak acak murni) dan 
+    # fitur-fitur yang dibuat berhasil menangkap sinyal pergerakan volatilitas tersebut.
 
     MODEL_PATH.parent.mkdir(exist_ok=True)
     joblib.dump(model, MODEL_PATH)
@@ -53,12 +53,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# =====================================================================
-# BANK PETUNJUK (konsep, bukan jawaban jadi)
-# A. volatilitas_depan(df).iloc[:n].median()
-# B. X.iloc[:n] / X.iloc[n:] (dan sama untuk y). 'n' sudah dihitung.
-# C. RandomForestClassifier(...).fit(X_tr, y_tr)  (boleh set random_state).
-# D. acc = model.score(X_te, y_te); majority = max(y_te.mean(), 1 - y_te.mean()).
-# =====================================================================
