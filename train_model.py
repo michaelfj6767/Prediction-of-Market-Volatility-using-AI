@@ -1,8 +1,8 @@
 from pathlib import Path
-import joblib  # Pastikan library joblib sudah terinstall (pip install joblib)
+import joblib  
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score  # <-- KEKURANGAN 1: Harus diimport untuk menghitung akurasi
+from sklearn.metrics import accuracy_score 
 
 from utils import buat_fitur, buat_target, volatilitas_depan, FITUR
 
